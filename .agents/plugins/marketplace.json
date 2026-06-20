@@ -1,0 +1,15 @@
+{
+  "name": "unipaas",
+  "interface": {
+    "displayName": "Unipaas"
+  },
+  "plugins": [
+    {
+      "name": "unipaas",
+      "source": {
+        "source": "local",
+        "path": "."
+      }
+    }
+  ]
+}
