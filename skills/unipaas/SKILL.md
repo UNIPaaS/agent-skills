@@ -1,69 +1,78 @@
 ---
 name: unipaas
-description: >-
-  Integrate Unipaas embedded payments for platforms and marketplaces — sandbox
-  setup, the /authorize access-token flow, accepting payments (Checkout Page,
-  Web SDK, Pay-in API), client-side buyer checkout via sessionToken, onboarding,
-  accounts, payouts, subscriptions, Direct Debit, and webhooks. Use when wiring
-  up Unipaas, building a checkout or payment form, tokenizing/saving cards,
-  embedding secure card fields (unipaas.sdk.js) or buyer web-embeds
-  (embedded-ui.js / unipaas.buyerComponents), platform embeds
-  (unipaas.components), onboarding vendors, splitting payments between vendors,
-  paying out funds, or handling authorization/onboarding webhooks.
+description: Building, wiring, or reviewing a Unipaas embedded-payments integration for a platform or marketplace - the /authorize access-token flow, accepting payments (Checkout Page, Web SDK secure fields, Pay-in API), client-side buyer checkout, vendor onboarding, accounts, payouts, subscriptions, Direct Debit, and webhooks. Use when wiring up Unipaas, building a checkout or payment form, embedding secure card fields or platform embeds, onboarding vendors, splitting or paying out funds, or handling authorization and onboarding webhooks.
 ---
 
-# Unipaas
+# Build on Unipaas
 
-## Foundation
+Use this when building, modifying, or reviewing a Unipaas integration. This skill maps the surface and
+the rules; fetch the live docs for exact endpoints, parameters, and payloads. Unipaas is embedded
+payments for platforms and marketplaces: you onboard vendors (sub-merchants), accept payments, hold
+balances in accounts, and pay funds out, with the money split you choose.
 
-Unipaas provides end-to-end **embedded payments for digital platforms and marketplaces** (SaaS, gig economy, B2B/B2C marketplaces). You onboard vendors (sub-merchants), accept payments, manage accounts (balances), and pay funds out — while controlling money flows and staying PSD2/PCI compliant.
+Sandbox and Live credentials are separate and share no data. Start in sandbox; get a key from the portal
+and read `/docs/getting-started/` and `/docs/authentication/` before writing code.
 
-**Get a sandbox key.** Create a free test account at `https://portal.unipaas.com/signup`. The test account is unlimited and always available. Find your **Private Key** in the portal under the developer/keys section. Sandbox and Live credentials are completely separate and share no data.
+## The integration map
 
-**Base URLs.**
-- Sandbox: `https://sandbox.unipaas.com/platform`
-- Production (Live): `https://api.unipaas.com/platform`
+Four products, each with a no-code, an embedded-UI, and an API tier. Pick the tier that matches your dev
+capacity and PCI posture.
 
-**Two auth modes (details in references/auth.md).**
-1. **Server-to-server**: send your **Private Key** as `Authorization: Bearer {{PRIVATE_KEY}}` directly on API calls (checkout creation, pay-ins, accounts, payouts, onboarding). The private key must stay server-side.
-2. **Two-step `/authorize` flow** (for client-side platform embeds): your server `POST`s the private key to `/authorize` with `scopes` and (usually) a `vendorId`, and receives a temporary `accessToken`. The client uses that access token — never the private key.
+- **Accept payments** - take a payment from a buyer, optionally split across vendors. Hosted Checkout
+  Page, Web SDK secure fields, or the server-to-server Pay-in API. See `/docs/accept-payments-overview/`.
+- **Vendor onboarding** - register sub-merchants so they can transact and be paid. Hosted link, embedded
+  onboarding UI, or the Onboarding API. See `/docs/vendor-onboarding-overview/`.
+- **Accounts** - the balances that hold collected funds per vendor and per platform. See
+  `/docs/ewallets-overview/`.
+- **Payout funds** - move settled balances out to vendors. See `/docs/pay-out-funds-overview/`.
 
-**Idempotency.** To avoid duplicate execution on retries, add a `requestId: <id>` header to `POST` requests. The same `requestId` applied multiple times yields a single result. Request IDs are valid for 24 hours.
+Two client-side embed families sit on top: buyer payment embeds (secure fields via `unipaas.sdk.js`,
+buyer web-embeds via `unipaas.buyerComponents`), both fed by a checkout `sessionToken`; and platform
+embeds via `unipaas.components`, fed by an `/authorize` access token. See `/docs/ui-web-embeds/`.
 
-## Decision map
+## Routing table
 
-Four products, three integration tiers. Pick the tier that matches your dev capacity and PCI posture.
+| Building... | Surface | Fetch |
+| --- | --- | --- |
+| Authorize a client-side platform embed | /authorize access token | /docs/authentication/ |
+| Create a payment / checkout session | Pay-in (server-side) | /docs/create-payment/ |
+| Hosted, low-effort checkout | Checkout Page (redirect) | /docs/checkout-page/ |
+| Your own card form, reduced PCI | Web SDK secure fields | /docs/web-sdk/ |
+| Full control, raw card data (SAQ D) | Pay-in API | /docs/api-only-server-to-server/ |
+| Buyer-side embedded checkout UI | Buyer web-embeds | /docs/buyer-ui-embedded-checkout-implementation-guide/ |
+| Platform embeds (balance, onboarding, payPortal) | unipaas.components | /docs/ui-web-embeds-integration-guide/ |
+| Save a card for later MIT/CIT | Tokenization | /docs/store-card-tokenization/ |
+| Recurring billing | Subscriptions | /docs/subscriptions/ |
+| Direct Debit collections | Direct Debit | /docs/direct-debit/ |
+| Auth-then-capture | Authorisation and capture | /docs/using-authorisation-and-capture/ |
+| Onboard a vendor | Vendor onboarding | /docs/create-vendor/ |
+| Pay a vendor out | Payouts | /docs/pay-out-funds-overview/ |
+| React to events server-side | Webhooks | /docs/webhook-guide/ |
+| Sandbox test cards and scenarios | Testing | /docs/test-cards/ |
 
-| Product | No-code | Low effort | Mid effort |
-| --- | --- | --- | --- |
-| **Onboarding** | Hosted onboarding link | Embedded UI (`unipaas.components`) | Onboarding API |
-| **Accept payments** | Payment Link (portal) | Checkout Page / Web SDK | Pay-in API (server-to-server) |
-| **Account management** | Portal view | Account/Balance component | Account API |
-| **Pay funds out** | Manual/Scheduled payout via portal | Payout form / Account component | Payouts API |
+## Critical rules (always apply)
 
-Guidance:
-- **Want zero code?** Use Payment Link, hosted onboarding link, portal payouts.
-- **Want your own UI with low effort + reduced PCI?** Use the Checkout Page (redirect), Web SDK secure fields, or buyer web-embeds; use platform embeds for onboarding/balance/portal.
-- **Want full control / white-label / native app?** Use the APIs. Pay-in API (raw card data) requires PCI SAQ D.
+- The secret/private key stays server-side. Never put it in the browser.
+- Authorization is two steps: POST /authorize to mint a short-lived scoped token, then call with it.
+- Web SDK secure fields are iframed; card data never touches your page.
+- Amounts are in the major currency unit, not the minor one: `amount: 150` means 150.00 (pounds/euros), never 150 pence/cents.
 
-Note: a transaction sent **without a `vendorId`** is recorded against the platform account.
-
-## Client-side checkout paths
-
-See **references/web-sdk.md** for full steps. Two buyer-payment paths, both authenticated with the **`sessionToken`** returned by a server-side `POST /pay-ins/checkout` — **not** the `/authorize` access token.
-
-1. **Secure-fields SDK** — load `https://cdn.unipaas.com/unipaas.sdk.js` (exposes the `Unipaas` global). Build your own card form, then `new Unipaas().initTokenize(sessionToken, fields, options)`. Secure fields are a feature of this bundle, not a separate package.
-2. **Buyer web-embeds** — load `https://cdn.unipaas.com/embedded-ui.js`, then `unipaas.buyerComponents(sessionToken, config)` and `.create("checkout"|"card"|"digitalWallet").mount("#id")`.
-
-**Auth boundary (important):**
-- Buyer payment (secure fields and buyer web-embeds) → `sessionToken` from `POST /pay-ins/checkout`.
-- **Platform embeds** (`unipaas.components`: balance, invoice, onboarding, payPortal, notification) → the **`/authorize` access token** with scopes + vendorId. Buyer checkout does **not** use the `/authorize` access token.
-
-After any client-side authorization, **verify server-side** with `GET /pay-ins/{authorizationId}`; status must be `CAPTURED` for success.
+These hold regardless of tier. The buyer-payment embeds authenticate with the per-checkout
+`sessionToken` from the server-side create-payment call, not the private key and not the `/authorize`
+token. Always confirm a payment from your server before fulfilling: re-fetch the authorization and treat
+a client-side success callback as a hint, the server status as truth.
 
 ## References
 
-- **references/auth.md** — the `/authorize` flow, scopes, token lifecycle, idempotency.
-- **references/accept-payments.md** — Accept Payments product, the three tiers, the Checkout Page, create-payment, tokenization, webhooks.
-- **references/web-sdk.md** — the two client-side buyer-payment paths fed by `sessionToken`.
-- **references/security.md** — key handling, what stays server-side, the PCI surface.
+- `references/accept-payments.md` - the three tiers, create-payment, tokenization, subscriptions, Direct Debit, post-payment.
+- `references/client-embeds.md` - the three tokens and which surface uses which; secure fields, buyer embeds, platform embeds.
+- `references/vendor-onboarding.md` - registering vendors, the three onboarding tiers, KYC/KYB, and the onboarding statuses.
+- `references/accounts-and-payouts.md` - where funds sit (balances), transfers, and paying funds out (two-step create then commit).
+- `references/security.md` - key handling, the /authorize token, the PCI surface, webhook HMAC.
+
+## Trust the live docs
+
+For exact endpoints, parameters, limits, and current code, fetch the per-page markdown at
+`/docs/<slug>.md` (or the whole corpus at `/llms-full.txt`). When this skill and the docs disagree,
+trust the docs. This skill is a map and a small set of stable rules; the live docs are the source of
+truth and version with the API.

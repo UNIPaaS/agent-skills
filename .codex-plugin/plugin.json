@@ -1,7 +1,7 @@
 {
   "name": "unipaas",
-  "version": "0.0.1",
-  "description": "Integrate Unipaas embedded payments for platforms and marketplaces — sandbox setup, the /authorize access-token flow, accepting payments (Checkout Page, Web SDK, Pay-in API), client-side buyer checkout via sessionToken, onboarding, accounts, payouts, subscriptions, Direct Debit, and webhooks. Use when wiring up Unipaas, building a checkout or payment form, tokenizing/saving cards, embedding secure card fields (unipaas.sdk.js) or buyer web-embeds (embedded-ui.js / unipaas.buyerComponents), platform embeds (unipaas.components), onboarding vendors, splitting payments between vendors, paying out funds, or handling authorization/onboarding webhooks.",
+  "version": "0.0.2",
+  "description": "Building, wiring, or reviewing a Unipaas embedded-payments integration for a platform or marketplace - the /authorize access-token flow, accepting payments (Checkout Page, Web SDK secure fields, Pay-in API), client-side buyer checkout, vendor onboarding, accounts, payouts, subscriptions, Direct Debit, and webhooks. Use when wiring up Unipaas, building a checkout or payment form, embedding secure card fields or platform embeds, onboarding vendors, splitting or paying out funds, or handling authorization and onboarding webhooks.",
   "skills": "./skills/",
   "mcpServers": "./.codex-plugin/mcp.json"
 }
