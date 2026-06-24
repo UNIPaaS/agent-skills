@@ -1,1 +1,8 @@
-{}
+{
+  "mcpServers": {
+    "unipaas-docs": {
+      "type": "http",
+      "url": "https://docs.mcp.unipaas.com"
+    }
+  }
+}
